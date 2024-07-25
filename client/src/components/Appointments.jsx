@@ -2,19 +2,27 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
+import {
+  Container,
+  Form,
+  Button,
+  Row,
+  Col,
+  Card,
+  Table,
+} from "react-bootstrap";
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
-  const [patients, setPatients] = useState([]); // State for patients
+  const [patients, setPatients] = useState([]);
   const [newAppointment, setNewAppointment] = useState({
-    patientId: "", // Change to patientId
+    patientId: "",
     doctorId: "",
     date: "",
   });
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     // Fetch appointments
@@ -31,7 +39,7 @@ const Appointments = () => {
 
     // Fetch patients
     axios
-      .get("http://localhost:5000/patients") // Assume this endpoint exists
+      .get("http://localhost:5000/patients")
       .then((response) => setPatients(response.data))
       .catch((error) => console.error("Error fetching patients:", error));
   }, []);
@@ -52,15 +60,14 @@ const Appointments = () => {
       date: newAppointment.date,
       patientName: patients.find(
         (patient) => patient._id === newAppointment.patientId
-      )?.name, // Get the patient's name based on the patientId
+      )?.name,
       doctorName: doctors.find(
         (doctor) => doctor._id === newAppointment.doctorId
-      )?.name, // Get the doctor's name based on the doctorId
+      )?.name,
     };
     axios
       .post("http://localhost:5000/appointments/add", appointmentData)
       .then((response) => {
-        console.log(response.data);
         setAppointments([...appointments, response.data]);
         setNewAppointment({
           patientId: "",
@@ -87,15 +94,14 @@ const Appointments = () => {
       date: selectedAppointment.date,
       patientName: patients.find(
         (patient) => patient._id === selectedAppointment.patientId
-      )?.name, // Get the patient's name based on the patientId
+      )?.name,
       doctorName: doctors.find(
         (doctor) => doctor._id === selectedAppointment.doctorId
-      )?.name, // Get the doctor's name based on the doctorId
+      )?.name,
     };
     axios
       .post(`http://localhost:5000/appointments/update/${id}`, appointmentData)
       .then((response) => {
-        console.log(response.data);
         const updatedApp = {
           ...selectedAppointment,
           _id: id,
@@ -115,7 +121,6 @@ const Appointments = () => {
     axios
       .delete(`http://localhost:5000/appointments/delete/${id}`)
       .then((response) => {
-        console.log(response.data);
         setAppointments(
           appointments.filter((appointment) => appointment._id !== id)
         );
@@ -128,37 +133,25 @@ const Appointments = () => {
     setIsEditMode(true);
   };
 
-  const handleViewHistory = (type, name) => {
-    const url =
-      type === "patient"
-        ? `http://localhost:5000/appointments/history/patient/${name}`
-        : `http://localhost:5000/appointments/history/doctor/${name}`;
-    axios
-      .get(url)
-      .then((response) => setHistory(response.data))
-      .catch((error) => console.error("Error fetching history:", error));
-  };
-
   return (
-    <div className="container">
-      <div className="row">
-        <div className="col-md-6">
-          <div className="card mb-4">
-            <div className="card-body">
-              <h4 className="card-title text-center">
+    <Container>
+      <Row className='mt-4'>
+        <Col md={6}>
+          <Card>
+            <Card.Body>
+              <Card.Title className='text-center'>
                 {isEditMode ? "Edit Appointment" : "Add New Appointment"}
-              </h4>
-              <form
+              </Card.Title>
+              <Form
                 onSubmit={
                   isEditMode
                     ? (e) => handleUpdateAppointment(selectedAppointment._id, e)
                     : handleAddAppointment
                 }
               >
-                <div className="mb-3">
-                  <label className="form-label">Patient Name:</label>
-                  <select
-                    className="form-select"
+                <Form.Group className='mb-3'>
+                  <Form.Label>Patient:</Form.Label>
+                  <Form.Select
                     value={
                       isEditMode
                         ? selectedAppointment.patientId
@@ -176,18 +169,17 @@ const Appointments = () => {
                           })
                     }
                   >
-                    <option value="">Select Patient</option>
+                    <option value=''>Select Patient</option>
                     {patients.map((patient) => (
                       <option key={patient._id} value={patient._id}>
                         {patient.name}
                       </option>
                     ))}
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Doctor:</label>
-                  <select
-                    className="form-select"
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className='mb-3'>
+                  <Form.Label>Doctor:</Form.Label>
+                  <Form.Select
                     value={
                       isEditMode
                         ? selectedAppointment.doctorId
@@ -205,19 +197,18 @@ const Appointments = () => {
                           })
                     }
                   >
-                    <option value="">Select Doctor</option>
+                    <option value=''>Select Doctor</option>
                     {doctors.map((doctor) => (
                       <option key={doctor._id} value={doctor._id}>
                         {doctor.name}
                       </option>
                     ))}
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Date:</label>
-                  <input
-                    type="date"
-                    className="form-control"
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className='mb-3'>
+                  <Form.Label>Date:</Form.Label>
+                  <Form.Control
+                    type='date'
                     value={
                       isEditMode
                         ? new Date(selectedAppointment.date)
@@ -237,49 +228,57 @@ const Appointments = () => {
                           })
                     }
                   />
-                </div>
-                <button type="submit" className="btn btn-primary">
+                </Form.Group>
+                <Button type='submit' variant='primary'>
                   {isEditMode ? "Update Appointment" : "Add Appointment"}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-6">
-          <h4 className="text-center mb-4">Appointments List</h4>
-          <ul className="list-group">
-            {appointments.map((appointment) => (
-              <li key={appointment._id} className="list-group-item">
-                <div>
-                  <strong>Patient:</strong> {appointment.patientName}
-                </div>
-                <div>
-                  <strong>Doctor:</strong> {appointment.doctorName}
-                </div>
-                <div>
-                  <strong>Date:</strong>{" "}
-                  {new Date(appointment.date).toLocaleDateString()}
-                </div>
-                <button
-                  className="btn btn-warning me-2"
-                  onClick={() => handleEditAppointment(appointment)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => handleDeleteAppointment(appointment._id)}
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-      </div>
-    </div>
+                </Button>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={6}>
+          <h3>
+            <center>Appointments List</center>
+          </h3>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {appointments.map((appointment) => (
+                <tr key={appointment._id}>
+                  <td>{appointment.patientName}</td>
+                  <td>{appointment.doctorName}</td>
+                  <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                  <td>
+                    <div className='d-flex justify-content-start'>
+                      <Button
+                        variant='primary'
+                        onClick={() => handleEditAppointment(appointment)}
+                        className='me-2'
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant='danger'
+                        onClick={() => handleDeleteAppointment(appointment._id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

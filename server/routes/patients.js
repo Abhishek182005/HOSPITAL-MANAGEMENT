@@ -25,7 +25,7 @@ router.route("/add").post((req, res) => {
 
 // Update patient data
 router.route("/update/:id").post((req, res) => {
-  console.log("hihhhhiuhiihihiuhiuh");
+  console.log("updated");
 
   Patient.findById(req.params.id)
     .then((patient) => {

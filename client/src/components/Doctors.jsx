@@ -1,7 +1,15 @@
+// src/components/Doctors.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import DoctorCard from "./DoctorCard.jsx";
-import { Container, Form, Button, Row, Col } from "react-bootstrap";
+import {
+  Container,
+  Form,
+  Button,
+  Row,
+  Col,
+  Table,
+  Card,
+} from "react-bootstrap";
 
 const Doctors = () => {
   const [doctors, setDoctors] = useState([]);
@@ -22,6 +30,10 @@ const Doctors = () => {
 
   const handleAddDoctor = (e) => {
     e.preventDefault();
+    if (!newDoctor.name || !newDoctor.specialty) {
+      console.error("All fields are required.");
+      return;
+    }
     axios
       .post("http://localhost:5000/doctors/add", newDoctor)
       .then((response) => {
@@ -33,13 +45,16 @@ const Doctors = () => {
 
   const handleUpdateDoctor = (id, e) => {
     e.preventDefault();
+    if (!selectedDoctor.name || !selectedDoctor.specialty) {
+      console.error("All fields are required.");
+      return;
+    }
     axios
-      .put(`http://localhost:5000/doctors/update/${id}`, selectedDoctor)
+      .post(`http://localhost:5000/doctors/update/${id}`, selectedDoctor)
       .then((response) => {
+        const updatedDoc = { ...selectedDoctor, _id: id };
         setDoctors(
-          doctors.map((doctor) =>
-            doctor._id === id ? { ...selectedDoctor, _id: id } : doctor
-          )
+          doctors.map((doctor) => (doctor._id === id ? updatedDoc : doctor))
         );
         setSelectedDoctor(null);
         setIsEditMode(false);
@@ -65,83 +80,104 @@ const Doctors = () => {
     <Container>
       <Row className='mt-4'>
         <Col md={6}>
-          <h4>{isEditMode ? "Edit Doctor" : "Add New Doctor"}</h4>
-          <Form
-            onSubmit={
-              isEditMode
-                ? (e) => handleUpdateDoctor(selectedDoctor._id, e)
-                : handleAddDoctor
-            }
-          >
-            <Form.Group className='mb-3'>
-              <Form.Label>Name:</Form.Label>
-              <Form.Control
-                type='text'
-                value={isEditMode ? selectedDoctor.name : newDoctor.name}
-                onChange={(e) =>
+          <Card>
+            <Card.Body>
+              <Card.Title className='text-center'>
+                {isEditMode ? "Edit Doctor" : "Add New Doctor"}
+              </Card.Title>
+              <Form
+                onSubmit={
                   isEditMode
-                    ? setSelectedDoctor({
-                        ...selectedDoctor,
-                        name: e.target.value,
-                      })
-                    : setNewDoctor({ ...newDoctor, name: e.target.value })
-                }
-              />
-            </Form.Group>
-            <Form.Group className='mb-3'>
-              <Form.Label>Specialty:</Form.Label>
-              <Form.Control
-                as='select'
-                value={
-                  isEditMode ? selectedDoctor.specialty : newDoctor.specialty
-                }
-                onChange={(e) =>
-                  isEditMode
-                    ? setSelectedDoctor({
-                        ...selectedDoctor,
-                        specialty: e.target.value,
-                      })
-                    : setNewDoctor({
-                        ...newDoctor,
-                        specialty: e.target.value,
-                      })
+                    ? (e) => handleUpdateDoctor(selectedDoctor._id, e)
+                    : handleAddDoctor
                 }
               >
-                <option value=''>Select Specialty</option>
-                <option value='Cardiologist'>Cardiologist</option>
-                <option value='Radiologist'>Radiologist</option>
-                <option value='Neurologist'>Neurologist</option>
-                <option value='Pediatrician'>Pediatrician</option>
-                <option value='Orthopedic'>Orthopedic</option>
-                <option value='Gastroenterologist'>Gastroenterologist</option>
-                <option value='Dermatologist'>Dermatologist</option>
-                <option value='Oncologist'>Oncologist</option>
-                <option value='Endocrinologist'>Endocrinologist</option>
-                <option value='Ophthalmologist'>Ophthalmologist</option>
-                <option value='Psychiatrist'>Psychiatrist</option>
-                <option value='Urologist'>Urologist</option>
-                <option value='Pulmonologist'>Pulmonologist</option>
-                <option value='Hematologist'>Hematologist</option>
-                {/* Add more specialties as needed */}
-              </Form.Control>
-            </Form.Group>
-            <Button type='submit' variant='primary'>
-              {isEditMode ? "Update Doctor" : "Add Doctor"}
-            </Button>
-          </Form>
+                <Form.Group controlId='formDoctorName' className='mb-3'>
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Enter doctor name'
+                    value={isEditMode ? selectedDoctor.name : newDoctor.name}
+                    onChange={(e) =>
+                      isEditMode
+                        ? setSelectedDoctor({
+                            ...selectedDoctor,
+                            name: e.target.value,
+                          })
+                        : setNewDoctor({
+                            ...newDoctor,
+                            name: e.target.value,
+                          })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group controlId='formSpecialty' className='mb-3'>
+                  <Form.Label>Specialty</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Enter specialty'
+                    value={
+                      isEditMode
+                        ? selectedDoctor.specialty
+                        : newDoctor.specialty
+                    }
+                    onChange={(e) =>
+                      isEditMode
+                        ? setSelectedDoctor({
+                            ...selectedDoctor,
+                            specialty: e.target.value,
+                          })
+                        : setNewDoctor({
+                            ...newDoctor,
+                            specialty: e.target.value,
+                          })
+                    }
+                  />
+                </Form.Group>
+                <Button variant='primary' type='submit' className='w-100 mt-3'>
+                  {isEditMode ? "Update Doctor" : "Add Doctor"}
+                </Button>
+              </Form>
+            </Card.Body>
+          </Card>
         </Col>
+
         <Col md={6}>
-          <h4>Doctors List</h4>
-          <div className='d-flex flex-column'>
-            {doctors.map((doctor) => (
-              <DoctorCard
-                key={doctor._id}
-                doctor={doctor}
-                onEdit={handleEditDoctor}
-                onDelete={handleDeleteDoctor}
-              />
-            ))}
-          </div>
+          <h4 className='text-center mb-4'>Doctors List</h4>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Specialty</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {doctors.map((doctor) => (
+                <tr key={doctor._id}>
+                  <td>{doctor.name}</td>
+                  <td>{doctor.specialty}</td>
+                  <td>
+                    <div className='d-flex justify-content-between'>
+                      <Button
+                        variant='warning'
+                        className='me-2'
+                        onClick={() => handleEditDoctor(doctor)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant='danger'
+                        onClick={() => handleDeleteDoctor(doctor._id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         </Col>
       </Row>
     </Container>

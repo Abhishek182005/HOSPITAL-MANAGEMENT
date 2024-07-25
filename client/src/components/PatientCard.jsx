@@ -1,3 +1,4 @@
+// src/components/PatientCard.js
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 
@@ -9,7 +10,10 @@ const PatientCard = ({ patient, onEdit, onDelete }) => {
         <p className='card-text'>Age: {patient.age}</p>
         <p className='card-text'>Gender: {patient.gender}</p>
         <div className='d-flex justify-content-between'>
-          <button className='btn btn-primary' onClick={() => onEdit(patient)}>
+          <button
+            className='btn btn-primary me-2'
+            onClick={() => onEdit(patient)}
+          >
             Edit
           </button>
           <button
